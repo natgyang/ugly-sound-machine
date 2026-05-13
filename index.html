@@ -251,8 +251,8 @@
   }
   .fx-label { font-size: 9px; color: var(--dim); letter-spacing: 2px; text-transform: uppercase; }
   .fx-slider {
-    appearance: none;
     -webkit-appearance: none;
+    appearance: none;
     width: 100%;
     height: 4px;
     background: var(--border);
@@ -260,7 +260,6 @@
     cursor: pointer;
   }
   .fx-slider::-webkit-slider-thumb {
-    appearance: none;
     -webkit-appearance: none;
     width: 12px; height: 12px;
     background: var(--purple);
@@ -822,8 +821,12 @@ function toggleCollageLoop() {
 
 // ==================== AUDIO ENGINE ====================
 function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
   return audioCtx;
 }
 
@@ -843,11 +846,10 @@ function generateSound(category, sampleName) {
   if (catName === 'BROKEN ELECTRONICS' || catName === 'TV STATIC') {
     for (let i = 0; i < frameCount; i++) {
       const t = i / sampleRate;
-      const noise = (Math.random() * 2 - 1) * 0.3;
-      const buzz = Math.sin(t * 60 * Math.PI * 2) * 0.15;
-      const crackle = Math.random() < 0.002 ? (Math.random() * 2 - 1) * 0.8 : 0;
-      const modFreq = 50 + rng(3) * 200;
-      const mod = Math.sin(t * modFreq * Math.PI * 2) * 0.1;
+      const noise = (Math.random() * 2 - 1) * 0.05;
+      const buzz = Math.sin(t * 60 * Math.PI * 2) * 0.25;
+      const crackle = Math.random() < 0.001 ? (Math.random() * 2 - 1) * 0.3 : 0;
+      const mod = Math.sin(t * (50 + rng(3) * 200) * Math.PI * 2) * 0.2;
       data[i] = (noise + buzz + crackle + mod) * (1 - t / duration * 0.3);
     }
   } else if (catName === 'SCREAMS' || catName === 'EVIL LAUGHS') {
@@ -856,11 +858,10 @@ function generateSound(category, sampleName) {
       const baseFreq = 200 + rng(1) * 400;
       const envelope = Math.sin(t / duration * Math.PI) * Math.pow(Math.E, -t * 0.5);
       const vibrato = Math.sin(t * 7 * Math.PI * 2) * 0.1;
-      const noise = (Math.random() * 2 - 1) * 0.1;
       const harm1 = Math.sin(t * baseFreq * Math.PI * 2);
       const harm2 = Math.sin(t * baseFreq * 1.5 * Math.PI * 2) * 0.4;
       const harm3 = Math.sin(t * baseFreq * 2 * Math.PI * 2) * 0.2;
-      data[i] = (harm1 + harm2 + harm3 + noise) * (0.5 + vibrato) * envelope * 0.6;
+      data[i] = (harm1 + harm2 + harm3) * (0.5 + vibrato) * envelope * 0.6;
     }
   } else if (catName === 'METAL') {
     for (let i = 0; i < frameCount; i++) {
@@ -870,51 +871,45 @@ function generateSound(category, sampleName) {
       const decay = Math.exp(-t * (1 + rng(3) * 3));
       const ring1 = Math.sin(t * freq1 * Math.PI * 2);
       const ring2 = Math.sin(t * freq2 * Math.PI * 2);
-      const noise = (Math.random() * 2 - 1) * 0.05;
-      data[i] = (ring1 * 0.5 + ring2 * 0.4 + noise) * decay * 0.7;
+      data[i] = (ring1 * 0.5 + ring2 * 0.4) * decay * 0.7;
     }
   } else if (catName === 'WATER') {
     for (let i = 0; i < frameCount; i++) {
       const t = i / sampleRate;
       const bubble = Math.sin(t * (400 + rng(i * 0.001) * 600) * Math.PI * 2) * Math.exp(-t * 8) * (Math.random() < 0.03 ? 0.6 : 0);
       const drip = Math.sin(t * (600 + rng(2) * 400) * Math.PI * 2) * Math.exp(-((t % 1.2) * 10));
-      const flow = (Math.random() * 2 - 1) * 0.08;
-      data[i] = (bubble + drip * 0.5 + flow) * 0.6;
+      data[i] = (bubble + drip * 0.5) * 0.6;
     }
   } else if (catName === 'NATURE') {
     for (let i = 0; i < frameCount; i++) {
       const t = i / sampleRate;
-      const wind = (Math.random() * 2 - 1) * 0.2;
-      const lowRumble = Math.sin(t * (20 + rng(1) * 40) * Math.PI * 2) * 0.15;
-      const rustle = (Math.random() * 2 - 1) * 0.1 * Math.abs(Math.sin(t * 3));
+      const lowRumble = Math.sin(t * (20 + rng(1) * 40) * Math.PI * 2) * 0.3;
+      const rustle = Math.sin(t * (200 + rng(2) * 300) * Math.PI * 2) * 0.1 * Math.abs(Math.sin(t * 3));
       const thunder = rng(3) > 0.97 ? Math.sin(t * 60 * Math.PI * 2) * Math.exp(-t * 2) * 0.5 : 0;
-      data[i] = (wind + lowRumble + rustle + thunder) * 0.7;
+      data[i] = (lowRumble + rustle + thunder) * 0.7;
     }
   } else if (catName === 'BODY SOUNDS' || catName === 'MOUTH SOUNDS') {
     for (let i = 0; i < frameCount; i++) {
       const t = i / sampleRate;
-      const pop = Math.random() < 0.005 ? Math.exp(-((t % 0.8) * 30)) * (Math.random() * 2 - 1) * 0.9 : 0;
-      const breath = (Math.random() * 2 - 1) * 0.15 * (0.5 + Math.sin(t * 0.5 * Math.PI * 2) * 0.5);
-      const low = Math.sin(t * (80 + rng(1) * 120) * Math.PI * 2) * 0.1 * Math.exp(-t * 0.3);
-      data[i] = (pop + breath + low) * 0.7;
+      const pop = Math.random() < 0.004 ? Math.exp(-((t % 0.8) * 30)) * (Math.random() * 2 - 1) * 0.8 : 0;
+      const low = Math.sin(t * (80 + rng(1) * 120) * Math.PI * 2) * 0.25 * Math.exp(-t * 0.3);
+      data[i] = (pop + low) * 0.7;
     }
   } else if (catName === 'SCI-FI') {
     for (let i = 0; i < frameCount; i++) {
       const t = i / sampleRate;
       const sweep = Math.sin(t * (200 + t * 300 * rng(1)) * Math.PI * 2) * 0.4;
-      const noise = (Math.random() * 2 - 1) * 0.1;
       const pulse = Math.floor(Math.sin(t * (4 + rng(2) * 8) * Math.PI * 2) + 1) * 0.2;
       const drone = Math.sin(t * (50 + rng(3) * 100) * Math.PI * 2) * 0.2;
-      data[i] = (sweep + noise + pulse + drone) * Math.min(1, t * 3) * 0.6;
+      data[i] = (sweep + pulse + drone) * Math.min(1, t * 3) * 0.6;
     }
   } else if (catName === 'HORROR') {
     for (let i = 0; i < frameCount; i++) {
       const t = i / sampleRate;
       const creak = Math.sin(t * (40 + Math.sin(t * 0.3) * 20) * Math.PI * 2) * 0.3;
-      const groan = Math.sin(t * (80 + Math.sin(t * 0.5) * 30) * Math.PI * 2) * 0.2;
-      const noise = (Math.random() * 2 - 1) * 0.05;
+      const groan = Math.sin(t * (80 + Math.sin(t * 0.5) * 30) * Math.PI * 2) * 0.25;
       const heartbeat = t % 1 < 0.08 ? Math.sin(t * 200 * Math.PI * 2) * Math.exp(-(t % 1) * 40) * 0.6 : 0;
-      data[i] = (creak + groan + noise + heartbeat) * 0.7;
+      data[i] = (creak + groan + heartbeat) * 0.7;
     }
   } else if (catName === 'BEATS / RHYTHM') {
     for (let i = 0; i < frameCount; i++) {
@@ -922,8 +917,8 @@ function generateSound(category, sampleName) {
       const bpm = 80 + rng(1) * 80;
       const beat = t * bpm / 60;
       const kick = beat % 1 < 0.05 ? Math.exp(-(beat % 1) * 40) * Math.sin(t * 60 * Math.PI * 2) * 0.8 : 0;
-      const snare = beat % 2 > 0.9 ? (Math.random() * 2 - 1) * Math.exp(-(beat % 1) * 20) * 0.5 : 0;
-      const hihat = beat % 0.5 < 0.04 ? (Math.random() * 2 - 1) * 0.2 : 0;
+      const snare = beat % 2 > 0.9 ? Math.exp(-(beat % 1) * 20) * Math.sin(t * 200 * Math.PI * 2) * 0.4 : 0;
+      const hihat = beat % 0.5 < 0.04 ? Math.sin(t * 800 * Math.PI * 2) * Math.exp(-(beat % 0.5) * 60) * 0.2 : 0;
       data[i] = (kick + snare + hihat) * 0.7;
     }
   } else if (catName === 'WEIRD INSTRUMENTS') {
@@ -933,213 +928,321 @@ function generateSound(category, sampleName) {
       const vib = Math.sin(t * 5 * Math.PI * 2) * 20;
       const tone = Math.sin(t * (baseFreq + vib) * Math.PI * 2) * 0.4;
       const harm = Math.sin(t * (baseFreq * 2 + vib) * Math.PI * 2) * 0.2;
-      const bow = (Math.random() * 2 - 1) * 0.05;
       const env = Math.min(1, t * 2) * Math.max(0, 1 - (t - duration + 1));
-      data[i] = (tone + harm + bow) * env * 0.7;
+      data[i] = (tone + harm) * env * 0.7;
     }
   } else if (catName === 'KITCHEN' || catName === 'CONSTRUCTION' || catName === 'OFFICE') {
     for (let i = 0; i < frameCount; i++) {
       const t = i / sampleRate;
       const mechFreq = 100 + rng(1) * 200;
       const mech = Math.sin(t * mechFreq * Math.PI * 2) * 0.3;
-      const impact = Math.random() < 0.01 ? (Math.random() * 2 - 1) * 0.7 * Math.exp(-(t % 0.5) * 20) : 0;
-      const hum = Math.sin(t * 60 * Math.PI * 2) * 0.1 + Math.sin(t * 120 * Math.PI * 2) * 0.05;
+      const impact = Math.random() < 0.008 ? Math.sin(t * 300 * Math.PI * 2) * Math.exp(-(t % 0.5) * 25) * 0.6 : 0;
+      const hum = Math.sin(t * 60 * Math.PI * 2) * 0.15 + Math.sin(t * 120 * Math.PI * 2) * 0.08;
       data[i] = (mech + impact + hum) * 0.6;
     }
   } else {
-    // Default: interesting noise for all other categories
     for (let i = 0; i < frameCount; i++) {
       const t = i / sampleRate;
       const baseFreq = 100 + rng(1) * 300;
-      const tone = Math.sin(t * baseFreq * Math.PI * 2) * 0.3;
-      const mod = Math.sin(t * (baseFreq * 0.5) * Math.PI * 2) * 0.2;
-      const noise = (Math.random() * 2 - 1) * 0.2;
+      const tone = Math.sin(t * baseFreq * Math.PI * 2) * 0.35;
+      const mod = Math.sin(t * (baseFreq * 0.5) * Math.PI * 2) * 0.25;
       const env = Math.sin(t / duration * Math.PI);
-      data[i] = (tone + mod + noise) * env * 0.6;
+      data[i] = (tone + mod) * env * 0.6;
     }
   }
 
   // Apply FX
-  applyFxToBuffer(data, sampleRate, duration);
+  // (FX are now applied via real-time audio nodes in playBuffer)
 
   return buffer;
 }
 
-function applyFxToBuffer(data, sampleRate, duration) {
-  const frameCount = data.length;
-  const dist = fxState.distort / 100;
-  const bc = fxState.bitcrush / 100;
+// ==================== FX NODES (persistent, real-time) ====================
+let fxNodes = null;
+
+function buildFxChain(ctx) {
+  // Create all FX nodes once and keep them
+  const nodes = {};
+
+  // Distortion (WaveShaper)
+  nodes.distorter = ctx.createWaveShaper();
+  nodes.distorter.oversample = '4x';
+
+  // Overdrive (WaveShaper)
+  nodes.overdrive = ctx.createWaveShaper();
+  nodes.overdrive.oversample = '2x';
+
+  // Echo/Delay
+  nodes.delay = ctx.createDelay(2.0);
+  nodes.delayFeedback = ctx.createGain();
+  nodes.delayWet = ctx.createGain();
+  nodes.delayDry = ctx.createGain();
+  nodes.delayMix = ctx.createGain();
+  nodes.delay.delayTime.value = 0.3;
+  nodes.delayFeedback.gain.value = 0;
+  nodes.delayWet.gain.value = 0;
+  nodes.delayDry.gain.value = 1;
+
+  // Reverb (Convolver)
+  nodes.convolver = ctx.createConvolver();
+  nodes.reverbWet = ctx.createGain();
+  nodes.reverbDry = ctx.createGain();
+  nodes.reverbMix = ctx.createGain();
+  nodes.reverbWet.gain.value = 0;
+  nodes.reverbDry.gain.value = 1;
+  setReverbImpulse(ctx, nodes.convolver, 0.5);
+
+  // Pitch (playbackRate on source — handled separately)
+
+  // Flanger
+  nodes.flangerDelay = ctx.createDelay(0.02);
+  nodes.flangerLFO = ctx.createOscillator();
+  nodes.flangerLFOGain = ctx.createGain();
+  nodes.flangerWet = ctx.createGain();
+  nodes.flangerDry = ctx.createGain();
+  nodes.flangerMix = ctx.createGain();
+  nodes.flangerLFO.frequency.value = 0.5;
+  nodes.flangerLFOGain.gain.value = 0;
+  nodes.flangerWet.gain.value = 0;
+  nodes.flangerDry.gain.value = 1;
+  nodes.flangerLFO.connect(nodes.flangerLFOGain);
+  nodes.flangerLFOGain.connect(nodes.flangerDelay.delayTime);
+  nodes.flangerLFO.start();
+
+  // Wobble (LFO on gain for tremolo effect)
+  nodes.wobbleLFO = ctx.createOscillator();
+  nodes.wobbleLFOGain = ctx.createGain();
+  nodes.wobbleGain = ctx.createGain();
+  nodes.wobbleLFO.frequency.value = 4;
+  nodes.wobbleLFOGain.gain.value = 0;
+  nodes.wobbleGain.gain.value = 1;
+  nodes.wobbleLFO.connect(nodes.wobbleLFOGain);
+  nodes.wobbleLFOGain.connect(nodes.wobbleGain.gain);
+  nodes.wobbleLFO.start();
+
+  // Stutter (periodic gain cuts via script processor — use simple gain toggle)
+  nodes.stutterGain = ctx.createGain();
+  nodes.stutterGain.gain.value = 1;
+
+  // Chop (LFO gate)
+  nodes.chopLFO = ctx.createOscillator();
+  nodes.chopLFOGain = ctx.createGain();
+  nodes.chopGain = ctx.createGain();
+  nodes.chopLFO.type = 'square';
+  nodes.chopLFO.frequency.value = 4;
+  nodes.chopLFOGain.gain.value = 0;
+  nodes.chopGain.gain.value = 1;
+  nodes.chopLFO.connect(nodes.chopLFOGain);
+  nodes.chopLFOGain.connect(nodes.chopGain.gain);
+  nodes.chopLFO.start();
+
+  // Tape stop (playbackRate ramp — handled on source)
+
+  // Vinyl crackle (noise + gain)
+  nodes.vinylNoise = ctx.createBufferSource();
+  const noiseLen = ctx.sampleRate * 2;
+  const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+  const nd = noiseBuf.getChannelData(0);
+  for (let i = 0; i < noiseLen; i++) nd[i] = (Math.random() * 2 - 1);
+  nodes.vinylNoise.buffer = noiseBuf;
+  nodes.vinylNoise.loop = true;
+  nodes.vinylGain = ctx.createGain();
+  nodes.vinylGain.gain.value = 0;
+  nodes.vinylNoise.connect(nodes.vinylGain);
+  nodes.vinylNoise.start();
+
+  // Bitcrush (WaveShaper)
+  nodes.bitcrusher = ctx.createWaveShaper();
+
+  // Master gain
+  nodes.master = ctx.createGain();
+  nodes.master.gain.value = 0.85;
+
+  // Connect chain:
+  // source → distorter → overdrive → bitcrusher → wobbleGain → stutterGain → chopGain
+  //   → delayDry+delayWet(delay→feedback→delay) → delayMix
+  //   → reverbDry+reverbWet(convolver) → reverbMix
+  //   → flangerDry+flangerWet(flangerDelay) → flangerMix
+  //   → master → destination
+  // vinylGain also → master
+
+  nodes.vinylGain.connect(nodes.master);
+  nodes.master.connect(ctx.destination);
+
+  return nodes;
+}
+
+function connectSource(source, nodes, ctx) {
+  source.connect(nodes.distorter);
+  nodes.distorter.connect(nodes.overdrive);
+  nodes.overdrive.connect(nodes.bitcrusher);
+  nodes.bitcrusher.connect(nodes.wobbleGain);
+  nodes.wobbleGain.connect(nodes.stutterGain);
+  nodes.stutterGain.connect(nodes.chopGain);
+
+  // Delay
+  nodes.chopGain.connect(nodes.delayDry);
+  nodes.chopGain.connect(nodes.delay);
+  nodes.delay.connect(nodes.delayFeedback);
+  nodes.delayFeedback.connect(nodes.delay);
+  nodes.delay.connect(nodes.delayWet);
+  nodes.delayDry.connect(nodes.delayMix);
+  nodes.delayWet.connect(nodes.delayMix);
+
+  // Reverb
+  nodes.delayMix.connect(nodes.reverbDry);
+  nodes.delayMix.connect(nodes.convolver);
+  nodes.convolver.connect(nodes.reverbWet);
+  nodes.reverbDry.connect(nodes.reverbMix);
+  nodes.reverbWet.connect(nodes.reverbMix);
+
+  // Flanger
+  nodes.reverbMix.connect(nodes.flangerDry);
+  nodes.reverbMix.connect(nodes.flangerDelay);
+  nodes.flangerDelay.connect(nodes.flangerWet);
+  nodes.flangerDry.connect(nodes.flangerMix);
+  nodes.flangerWet.connect(nodes.flangerMix);
+
+  nodes.flangerMix.connect(nodes.master);
+}
+
+function setReverbImpulse(ctx, convolver, duration) {
+  const len = Math.floor(ctx.sampleRate * duration);
+  const imp = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = imp.getChannelData(ch);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+  }
+  convolver.buffer = imp;
+}
+
+function makeDistortionCurve(amount) {
+  const n = 256;
+  const curve = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = (i * 2) / n - 1;
+    curve[i] = amount > 0 ? Math.tanh(x * (1 + amount * 10)) : x;
+  }
+  return curve;
+}
+
+function makeBitcrushCurve(bits) {
+  const n = 256;
+  const curve = new Float32Array(n);
+  const steps = Math.pow(2, Math.max(1, 8 - Math.floor(bits * 7)));
+  for (let i = 0; i < n; i++) {
+    const x = (i * 2) / n - 1;
+    curve[i] = Math.round(x * steps) / steps;
+  }
+  return curve;
+}
+
+function applyFxNodes(nodes, ctx) {
+  if (!nodes) return;
+  const d = fxState.distort / 100;
   const od = fxState.overdrive / 100;
-  const ts = fxState.tapestop / 100;
+  const bc = fxState.bitcrush / 100;
+  const echo = fxState.echo / 100;
+  const rev = fxState.reverb / 100;
+  const flang = fxState.flanger / 100;
+  const wob = fxState.wobble / 100;
+  const chop = fxState.chop / 100;
+  const vinyl = fxState.vinyl / 100;
+  const stutter = fxState.stutter / 100;
 
-  for (let i = 0; i < frameCount; i++) {
-    let s = data[i];
+  // Distortion
+  nodes.distorter.curve = makeDistortionCurve(d);
 
-    // Distortion
-    if (dist > 0) s = Math.tanh(s * (1 + dist * 8));
+  // Overdrive
+  nodes.overdrive.curve = makeDistortionCurve(od * 0.6);
 
-    // Overdrive
-    if (od > 0) s = s * (1 + od * 4) > 1 ? 1 : s * (1 + od * 4) < -1 ? -1 : s * (1 + od * 4);
+  // Bitcrush
+  nodes.bitcrusher.curve = bc > 0 ? makeBitcrushCurve(bc) : makeDistortionCurve(0);
 
-    // Bitcrush
-    if (bc > 0) {
-      const steps = Math.pow(2, Math.floor(bc * 6) + 2);
-      s = Math.round(s * steps) / steps;
-    }
+  // Echo
+  nodes.delay.delayTime.value = 0.1 + echo * 0.6;
+  nodes.delayFeedback.gain.value = echo * 0.65;
+  nodes.delayWet.gain.value = echo * 0.8;
+  nodes.delayDry.gain.value = 1;
 
-    // Tape stop
-    if (ts > 0) {
-      const slowFactor = 1 - (i / frameCount) * ts;
-      if (slowFactor <= 0.05) s = 0;
-      else s *= slowFactor;
-    }
+  // Reverb
+  const reverbDur = 0.3 + rev * 3;
+  setReverbImpulse(ctx, nodes.convolver, reverbDur);
+  nodes.reverbWet.gain.value = rev * 0.7;
+  nodes.reverbDry.gain.value = 1;
 
-    // Reverse
-    if (isReverse) {
-      // Will be applied by reversing playback
-    }
+  // Flanger
+  nodes.flangerLFO.frequency.value = 0.3 + flang * 6;
+  nodes.flangerLFOGain.gain.value = flang * 0.006;
+  nodes.flangerWet.gain.value = flang * 0.8;
+  nodes.flangerDry.gain.value = 1;
 
-    data[i] = s * 0.8;
-  }
-
-  // Wobble (pitch modulation)
-  if (fxState.wobble > 0) {
-    const wobbleDepth = fxState.wobble / 100 * 0.05;
-    const wobbly = new Float32Array(frameCount);
-    for (let i = 0; i < frameCount; i++) {
-      const t = i / sampleRate;
-      const offset = Math.sin(t * 4 * Math.PI * 2) * wobbleDepth * sampleRate;
-      const srcIdx = Math.floor(i + offset);
-      wobbly[i] = srcIdx >= 0 && srcIdx < frameCount ? data[srcIdx] : data[i];
-    }
-    for (let i = 0; i < frameCount; i++) data[i] = wobbly[i];
-  }
-
-  // Stutter
-  if (fxState.stutter > 0) {
-    const chopSize = Math.floor(sampleRate * 0.05 * (1 - fxState.stutter / 100 * 0.8));
-    for (let i = 0; i < frameCount; i++) {
-      if (Math.floor(i / chopSize) % 2 === 1 && Math.random() < fxState.stutter / 100 * 0.5) {
-        data[i] = 0;
-      }
-    }
-  }
+  // Wobble (tremolo)
+  nodes.wobbleLFO.frequency.value = 2 + wob * 10;
+  nodes.wobbleLFOGain.gain.value = wob * 0.8;
 
   // Chop
-  if (fxState.chop > 0) {
-    const chopFreq = fxState.chop / 100 * 20 + 2;
-    for (let i = 0; i < frameCount; i++) {
-      const t = i / sampleRate;
-      if (Math.sin(t * chopFreq * Math.PI * 2) < 0) data[i] *= 0.1;
-    }
-  }
+  nodes.chopLFO.frequency.value = 2 + chop * 18;
+  nodes.chopLFOGain.gain.value = chop * 0.9;
 
   // Vinyl crackle
-  if (fxState.vinyl > 0) {
-    for (let i = 0; i < frameCount; i++) {
-      if (Math.random() < fxState.vinyl / 100 * 0.02) {
-        data[i] += (Math.random() * 2 - 1) * 0.3;
-      }
-    }
+  nodes.vinylGain.gain.value = vinyl * 0.08;
+
+  // Stutter (rapid gain toggle)
+  if (stutter > 0) {
+    const rate = 100 + stutter * 400;
+    clearInterval(nodes._stutterInterval);
+    let tog = true;
+    nodes._stutterInterval = setInterval(() => {
+      tog = !tog;
+      if (nodes.stutterGain) nodes.stutterGain.gain.value = tog ? 1 : (1 - stutter * 0.9);
+    }, 1000 / rate);
+  } else {
+    clearInterval(nodes._stutterInterval);
+    if (nodes.stutterGain) nodes.stutterGain.gain.value = 1;
   }
+}
+
+function teardownFxNodes(nodes) {
+  if (!nodes) return;
+  clearInterval(nodes._stutterInterval);
+  try { nodes.flangerLFO.stop(); } catch(e){}
+  try { nodes.wobbleLFO.stop(); } catch(e){}
+  try { nodes.chopLFO.stop(); } catch(e){}
+  try { nodes.vinylNoise.stop(); } catch(e){}
 }
 
 function playBuffer(buffer, loop) {
   const ctx = getAudioCtx();
-  if (currentSource) { try { currentSource.stop(); } catch(e){} }
+  if (currentSource) { try { currentSource.stop(); } catch(e){} currentSource = null; }
+  teardownFxNodes(fxNodes);
+
+  fxNodes = buildFxChain(ctx);
+  applyFxNodes(fxNodes, ctx);
 
   const source = ctx.createBufferSource();
   source.buffer = buffer;
-  source.playbackRate.value = playbackSpeed;
   source.loop = loop;
 
-  // Build FX chain
-  let lastNode = source;
-  const chain = [];
+  // Pitch + speed
+  const pitchMult = fxState.pitch !== 0 ? Math.pow(2, fxState.pitch / 100) : 1;
+  source.playbackRate.value = playbackSpeed * pitchMult;
 
-  // Echo/Delay
-  if (fxState.echo > 0) {
-    const delay = ctx.createDelay(1.0);
-    delay.delayTime.value = 0.2 + fxState.echo / 100 * 0.5;
-    const feedbackGain = ctx.createGain();
-    feedbackGain.gain.value = fxState.echo / 100 * 0.7;
-    const dryGain = ctx.createGain();
-    dryGain.gain.value = 0.6;
-    lastNode.connect(dryGain);
-    lastNode.connect(delay);
-    delay.connect(feedbackGain);
-    feedbackGain.connect(delay);
-    const merger = ctx.createGain();
-    dryGain.connect(merger);
-    delay.connect(merger);
-    lastNode = merger;
+  // Tape stop effect
+  if (fxState.tapestop > 0) {
+    source.playbackRate.setValueAtTime(playbackSpeed * pitchMult, ctx.currentTime);
+    source.playbackRate.linearRampToValueAtTime(0.01, ctx.currentTime + buffer.duration * (1 - fxState.tapestop / 100 * 0.8));
   }
 
-  // Reverb (convolution approximation)
-  if (fxState.reverb > 0) {
-    const convLen = Math.floor(ctx.sampleRate * (0.5 + fxState.reverb / 100 * 3));
-    const impulse = ctx.createBuffer(2, convLen, ctx.sampleRate);
-    for (let ch = 0; ch < 2; ch++) {
-      const d = impulse.getChannelData(ch);
-      for (let i = 0; i < convLen; i++) {
-        d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / convLen, 2);
-      }
-    }
-    const conv = ctx.createConvolver();
-    conv.buffer = impulse;
-    const wetGain = ctx.createGain();
-    wetGain.gain.value = fxState.reverb / 100 * 0.6;
-    const dryGain = ctx.createGain();
-    dryGain.gain.value = 0.7;
-    lastNode.connect(dryGain);
-    lastNode.connect(conv);
-    conv.connect(wetGain);
-    const merger = ctx.createGain();
-    dryGain.connect(merger);
-    wetGain.connect(merger);
-    lastNode = merger;
-  }
-
-  // Pitch shift (playback rate trick)
-  if (fxState.pitch !== 0) {
-    source.playbackRate.value = playbackSpeed * Math.pow(2, fxState.pitch / 100);
-  }
-
-  // Flanger
-  if (fxState.flanger > 0) {
-    const flanDelay = ctx.createDelay(0.1);
-    flanDelay.delayTime.value = 0.005;
-    const lfo = ctx.createOscillator();
-    const lfoGain = ctx.createGain();
-    lfo.frequency.value = fxState.flanger / 100 * 5;
-    lfoGain.gain.value = 0.003;
-    lfo.connect(lfoGain);
-    lfoGain.connect(flanDelay.delayTime);
-    lfo.start();
-    const flanGain = ctx.createGain();
-    flanGain.gain.value = 0.6;
-    lastNode.connect(flanDelay);
-    flanDelay.connect(flanGain);
-    const merger = ctx.createGain();
-    lastNode.connect(merger);
-    flanGain.connect(merger);
-    lastNode = merger;
-    chain.push({ stop: () => { try { lfo.stop(); } catch(e){} } });
-  }
-
-  // Master gain
-  const masterGain = ctx.createGain();
-  masterGain.gain.value = 0.85;
-  lastNode.connect(masterGain);
-  masterGain.connect(ctx.destination);
+  connectSource(source, fxNodes, ctx);
 
   source.start();
   currentSource = source;
-  source._chain = chain;
 
   source.onended = () => {
-    chain.forEach(n => { if (n.stop) n.stop(); });
     if (!loop) {
+      teardownFxNodes(fxNodes);
+      fxNodes = null;
       setStatus('STOPPED');
       stopWaveform();
     }
@@ -1162,6 +1265,8 @@ function playSound() {
 
 function stopSound() {
   if (currentSource) { try { currentSource.stop(); } catch(e){} currentSource = null; }
+  teardownFxNodes(fxNodes);
+  fxNodes = null;
   setStatus('STOPPED');
   stopWaveform();
 }
@@ -1200,6 +1305,16 @@ function updateFx() {
   fxState.chop = +document.getElementById('fx-chop').value;
   document.getElementById('info-dist').textContent = fxState.distort;
   document.getElementById('info-echo').textContent = fxState.echo;
+
+  // Apply in real time if playing
+  if (fxNodes && isPlaying) {
+    applyFxNodes(fxNodes, getAudioCtx());
+    // Update pitch/speed on source
+    if (currentSource) {
+      const pitchMult = fxState.pitch !== 0 ? Math.pow(2, fxState.pitch / 100) : 1;
+      currentSource.playbackRate.value = playbackSpeed * pitchMult;
+    }
+  }
 }
 
 // ==================== COLLAGE ====================
@@ -1430,16 +1545,19 @@ function stopWaveform() {
 
 // ==================== MOBILE AUDIO UNLOCK ====================
 function unlockAudio() {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const buf = ctx.createBuffer(1, 1, 22050);
-  const src = ctx.createBufferSource();
-  src.buffer = buf;
-  src.connect(ctx.destination);
-  src.start(0);
-  ctx.resume().then(() => {
-    audioCtx = ctx;
+  // iOS Safari requires AudioContext to be created INSIDE a touch event
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const buf = audioCtx.createBuffer(1, 1, 22050);
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    src.connect(audioCtx.destination);
+    src.start(0);
     document.getElementById('audio-unlock-overlay').style.display = 'none';
-  });
+  } catch(e) {
+    console.log('Audio init error:', e);
+    document.getElementById('audio-unlock-overlay').style.display = 'none';
+  }
 }
 
 function checkMobile() {
@@ -1453,15 +1571,6 @@ function checkMobile() {
 renderCategories();
 renderCollage();
 checkMobile();
-
-// Also unlock audio on first interaction for all devices
-document.addEventListener('touchstart', function unlockOnTouch() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  document.removeEventListener('touchstart', unlockOnTouch);
-}, { once: true });
 </script>
 </body>
 </html>
