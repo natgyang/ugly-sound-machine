@@ -251,7 +251,6 @@
   }
   .fx-label { font-size: 9px; color: var(--dim); letter-spacing: 2px; text-transform: uppercase; }
   .fx-slider {
-    appearance: none;
     -webkit-appearance: none;
     width: 100%;
     height: 4px;
@@ -1206,10 +1205,16 @@ function buildFxChain(ctx) {
   // Distortion (WaveShaper)
   nodes.distorter = ctx.createWaveShaper();
   nodes.distorter.oversample = '4x';
+  nodes.distorter.curve = makeLinearCurve();
 
   // Overdrive (WaveShaper)
   nodes.overdrive = ctx.createWaveShaper();
   nodes.overdrive.oversample = '2x';
+  nodes.overdrive.curve = makeLinearCurve();
+
+  // Bitcrush
+  nodes.bitcrusher = ctx.createWaveShaper();
+  nodes.bitcrusher.curve = makeLinearCurve();
 
   // Echo/Delay
   nodes.delay = ctx.createDelay(2.0);
@@ -1255,11 +1260,14 @@ function buildFxChain(ctx) {
   nodes.wobbleLFO.frequency.value = 4;
   nodes.wobbleLFOGain.gain.value = 0;
   nodes.wobbleGain.gain.value = 1;
+  // Connect LFO to a separate add gain so it adds to 1.0, not replaces it
+  nodes.wobbleBaseGain = ctx.createGain();
+  nodes.wobbleBaseGain.gain.value = 1;
   nodes.wobbleLFO.connect(nodes.wobbleLFOGain);
-  nodes.wobbleLFOGain.connect(nodes.wobbleGain.gain);
+  // Don't connect LFO to wobbleGain.gain yet — only connect when wobble > 0
   nodes.wobbleLFO.start();
 
-  // Stutter (periodic gain cuts via script processor — use simple gain toggle)
+  // Stutter
   nodes.stutterGain = ctx.createGain();
   nodes.stutterGain.gain.value = 1;
 
@@ -1272,12 +1280,12 @@ function buildFxChain(ctx) {
   nodes.chopLFOGain.gain.value = 0;
   nodes.chopGain.gain.value = 1;
   nodes.chopLFO.connect(nodes.chopLFOGain);
-  nodes.chopLFOGain.connect(nodes.chopGain.gain);
+  // Don't connect to chopGain.gain yet — only when chop > 0
   nodes.chopLFO.start();
 
   // Tape stop (playbackRate ramp — handled on source)
 
-  // Vinyl crackle (noise + gain)
+  // Vinyl crackle — only connect when vinyl > 0
   nodes.vinylNoise = ctx.createBufferSource();
   const noiseLen = ctx.sampleRate * 2;
   const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
@@ -1289,13 +1297,11 @@ function buildFxChain(ctx) {
   nodes.vinylGain.gain.value = 0;
   nodes.vinylNoise.connect(nodes.vinylGain);
   nodes.vinylNoise.start();
-
-  // Bitcrush (WaveShaper)
-  nodes.bitcrusher = ctx.createWaveShaper();
+  nodes._vinylConnected = false;
 
   // Master gain
   nodes.master = ctx.createGain();
-  nodes.master.gain.value = 0.85;
+  nodes.master.gain.value = 1.4;
 
   // Connect chain:
   // source → distorter → overdrive → bitcrusher → wobbleGain → stutterGain → chopGain
@@ -1305,7 +1311,6 @@ function buildFxChain(ctx) {
   //   → master → destination
   // vinylGain also → master
 
-  nodes.vinylGain.connect(nodes.master);
   nodes.master.connect(ctx.destination);
 
   return nodes;
@@ -1355,12 +1360,19 @@ function setReverbImpulse(ctx, convolver, duration) {
   convolver.buffer = imp;
 }
 
+function makeLinearCurve() {
+  const n = 256;
+  const curve = new Float32Array(n);
+  for (let i = 0; i < n; i++) curve[i] = (i * 2) / n - 1;
+  return curve;
+}
+
 function makeDistortionCurve(amount) {
   const n = 256;
   const curve = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     const x = (i * 2) / n - 1;
-    curve[i] = amount > 0 ? Math.tanh(x * (1 + amount * 10)) : x;
+    curve[i] = amount > 0.01 ? Math.tanh(x * (1 + amount * 10)) : x;
   }
   return curve;
 }
@@ -1390,13 +1402,13 @@ function applyFxNodes(nodes, ctx) {
   const stutter = fxState.stutter / 100;
 
   // Distortion
-  nodes.distorter.curve = makeDistortionCurve(d);
+  nodes.distorter.curve = d > 0.01 ? makeDistortionCurve(d) : makeLinearCurve();
 
   // Overdrive
-  nodes.overdrive.curve = makeDistortionCurve(od * 0.6);
+  nodes.overdrive.curve = od > 0.01 ? makeDistortionCurve(od * 0.6) : makeLinearCurve();
 
   // Bitcrush
-  nodes.bitcrusher.curve = bc > 0 ? makeBitcrushCurve(bc) : makeDistortionCurve(0);
+  nodes.bitcrusher.curve = bc > 0.01 ? makeBitcrushCurve(bc) : makeLinearCurve();
 
   // Echo
   nodes.delay.delayTime.value = 0.1 + echo * 0.6;
@@ -1416,16 +1428,44 @@ function applyFxNodes(nodes, ctx) {
   nodes.flangerWet.gain.value = flang * 0.8;
   nodes.flangerDry.gain.value = 1;
 
-  // Wobble (tremolo)
+  // Wobble (tremolo) — only connect LFO when wobble > 0
   nodes.wobbleLFO.frequency.value = 2 + wob * 10;
-  nodes.wobbleLFOGain.gain.value = wob * 0.8;
+  if (wob > 0) {
+    nodes.wobbleGain.gain.value = 1;
+    nodes.wobbleLFOGain.gain.value = wob * 0.8;
+    try { nodes.wobbleLFOGain.connect(nodes.wobbleGain.gain); } catch(e){}
+  } else {
+    nodes.wobbleLFOGain.gain.value = 0;
+    nodes.wobbleGain.gain.value = 1;
+    try { nodes.wobbleLFOGain.disconnect(nodes.wobbleGain.gain); } catch(e){}
+  }
 
-  // Chop
+  // Chop — only connect LFO when chop > 0
   nodes.chopLFO.frequency.value = 2 + chop * 18;
-  nodes.chopLFOGain.gain.value = chop * 0.9;
+  if (chop > 0) {
+    nodes.chopGain.gain.value = 1;
+    nodes.chopLFOGain.gain.value = chop * 0.9;
+    try { nodes.chopLFOGain.connect(nodes.chopGain.gain); } catch(e){}
+  } else {
+    nodes.chopLFOGain.gain.value = 0;
+    nodes.chopGain.gain.value = 1;
+    try { nodes.chopLFOGain.disconnect(nodes.chopGain.gain); } catch(e){}
+  }
 
-  // Vinyl crackle
-  nodes.vinylGain.gain.value = vinyl * 0.08;
+  // Vinyl crackle — only connect when > 0
+  if (vinyl > 0) {
+    nodes.vinylGain.gain.value = vinyl * 0.06;
+    if (!nodes._vinylConnected) {
+      nodes.vinylGain.connect(nodes.master);
+      nodes._vinylConnected = true;
+    }
+  } else {
+    nodes.vinylGain.gain.value = 0;
+    if (nodes._vinylConnected) {
+      try { nodes.vinylGain.disconnect(nodes.master); } catch(e){}
+      nodes._vinylConnected = false;
+    }
+  }
 
   // Stutter (rapid gain toggle)
   if (stutter > 0) {
