@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UGLY SOUND MACHINE</title>
+<style>
+  :root {
+    --bg: #000;
+    --bg2: #0a0a0a;
+    --bg3: #111;
+    --border: #1a4d1a;
+    --green: #00ff41;
+    --green2: #00cc33;
+    --purple: #cc00ff;
+    --purple2: #9900cc;
+    --red: #ff2200;
+    --text: #00ff41;
+    --text2: #00cc33;
+    --dim: #006614;
+    --header-bg: #000;
+    --card-bg: #050f05;
+    --active-bg: #003300;
+    --btn-bg: #0a1a0a;
+    --btn-border: #00ff41;
+    --collage-bg: #050505;
+    --status-bar: #001a00;
+  }
+
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 100vh;
+    padding: 20px;
+    transition: all 0.3s;
+  }
+
+  /* THEME TOGGLE */
+
+
+  /* HEADER */
+  .header {
+    border: 2px solid var(--green);
+    padding: 18px 20px 14px;
+    margin-bottom: 24px;
+    background: var(--header-bg);
+    position: relative;
+  }
+  .header h1 {
+    font-size: clamp(22px, 5vw, 42px);
+    font-weight: 900;
+    color: var(--green);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px var(--green);
+  }
+  .header .subtitle {
+    font-size: 13px;
+    color: var(--green2);
+    margin-top: 6px;
+    letter-spacing: 2px;
+  }
+  .header .divider {
+    border: none;
+    border-top: 1px dashed var(--green2);
+    margin: 10px 0;
+  }
+  .status-bar {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: var(--green2);
+    background: var(--status-bar);
+    padding: 4px 0;
+    letter-spacing: 1px;
+  }
+  .status-bar span { color: var(--green); }
+
+  /* MAIN LAYOUT */
+  .main-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 700px) {
+    .main-layout { grid-template-columns: 1fr; }
+  }
+
+  /* CATEGORIES */
+  .section-label {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  @media (max-width: 400px) {
+    .categories-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .cat-card {
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    padding: 10px 8px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text);
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .cat-card:hover { border-color: var(--green); color: var(--green); background: var(--active-bg); }
+  .cat-card.active { border-color: var(--green); background: var(--active-bg); color: var(--green); box-shadow: 0 0 8px var(--green); }
+  .cat-name { font-weight: bold; font-size: 10px; }
+  .cat-count { color: var(--dim); font-size: 9px; margin-top: 3px; }
+  .cat-card.active .cat-count { color: var(--green2); }
+
+  /* SAMPLE LIST */
+  .sample-panel {
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    padding: 14px;
+    min-height: 300px;
+  }
+  .dir-label {
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .dir-label span { color: var(--green); }
+  .sample-list { display: flex; flex-direction: column; gap: 6px; }
+  .sample-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    color: var(--text2);
+    transition: all 0.1s;
+    letter-spacing: 0.5px;
+  }
+  .sample-item:hover { border-color: var(--green2); color: var(--green); background: var(--active-bg); }
+  .sample-item.active { background: var(--green); color: #000; border-color: var(--green); font-weight: bold; }
+  .sample-size { font-size: 10px; color: var(--dim); white-space: nowrap; margin-left: 10px; }
+  .sample-item.active .sample-size { color: #000; }
+  .sample-num { color: var(--dim); margin-right: 8px; font-size: 10px; }
+  .sample-item.active .sample-num { color: #000; }
+
+  /* OPERATION DECK */
+  .operation-deck {
+    border: 1px solid var(--purple2);
+    background: var(--card-bg);
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .deck-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+  .deck-label { color: var(--purple); }
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--dim);
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--dim);
+  }
+  .status-dot.playing { background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 1s infinite; }
+  .status-dot.stopped { background: var(--red); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .ctrl-btn {
+    border: 1px solid var(--purple2);
+    background: var(--btn-bg);
+    color: var(--purple);
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    padding: 8px 12px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.1s;
+    white-space: nowrap;
+  }
+  .ctrl-btn:hover { background: var(--purple2); color: #fff; }
+  .ctrl-btn.active { background: var(--purple); color: #000; border-color: var(--purple); }
+  .ctrl-btn.play-btn { border-color: var(--green); color: var(--green); }
+  .ctrl-btn.play-btn:hover, .ctrl-btn.play-btn.active { background: var(--green); color: #000; }
+  .ctrl-btn.stop-btn { border-color: var(--red); color: var(--red); }
+  .ctrl-btn.stop-btn:hover { background: var(--red); color: #000; }
+
+  .speed-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--purple2);
+    padding: 4px 8px;
+    background: var(--btn-bg);
+  }
+  .speed-val { color: var(--purple); font-size: 11px; min-width: 40px; text-align: center; }
+  .speed-btn {
+    background: none; border: none; color: var(--purple);
+    font-family: 'Courier New', monospace; font-size: 14px;
+    cursor: pointer; padding: 0 4px; line-height: 1;
+  }
+  .speed-btn:hover { color: #fff; }
+
+  .fx-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .fx-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 120px;
+  }
+  .fx-label { font-size: 9px; color: var(--dim); letter-spacing: 2px; text-transform: uppercase; }
+  .fx-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+  .fx-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    background: var(--purple);
+    cursor: pointer;
+  }
+  .fx-slider::-moz-range-thumb {
+    width: 12px; height: 12px;
+    background: var(--purple);
+    cursor: pointer;
+    border: none;
+  }
+
+  .deck-info {
+    border: 1px solid var(--border);
+    padding: 10px;
+    font-size: 10px;
+    background: var(--bg);
+    min-width: 200px;
+  }
+  .deck-info-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .deck-info-key { color: var(--dim); }
+  .deck-info-val { color: var(--green); font-weight: bold; }
+
+  /* COLLAGE */
+  .collage-section {
+    border: 1px solid var(--purple2);
+    background: var(--collage-bg);
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .collage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--purple);
+  }
+  .collage-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 60px;
+    border: 1px dashed var(--border);
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  .collage-slot {
+    border: 1px solid var(--purple2);
+    background: var(--btn-bg);
+    padding: 6px 10px;
+    font-size: 10px;
+    color: var(--purple);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .collage-slot:hover { border-color: var(--red); color: var(--red); }
+  .slot-x { font-size: 12px; font-weight: bold; }
+  .collage-empty { color: var(--dim); font-size: 10px; letter-spacing: 2px; align-self: center; }
+  .collage-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  .collage-btn {
+    border: 1px solid var(--purple2);
+    background: var(--btn-bg);
+    color: var(--purple);
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    padding: 7px 12px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.1s;
+  }
+  .collage-btn:hover { background: var(--purple2); color: #fff; }
+  .collage-btn.play-collage { border-color: var(--green); color: var(--green); }
+  .collage-btn.play-collage:hover { background: var(--green); color: #000; }
+  .collage-btn.clear { border-color: var(--red); color: var(--red); }
+  .collage-btn.clear:hover { background: var(--red); color: #000; }
+
+  /* RUIN IT */
+  .ruin-section {
+    text-align: center;
+    padding: 20px;
+  }
+  .ruin-btn {
+    border: 3px solid var(--red);
+    background: #0a0000;
+    color: var(--red);
+    font-family: 'Courier New', monospace;
+    font-size: clamp(18px, 4vw, 28px);
+    font-weight: 900;
+    padding: 20px 60px;
+    cursor: pointer;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    transition: all 0.1s;
+    width: 100%;
+    max-width: 500px;
+    text-shadow: 0 0 10px var(--red);
+    box-shadow: 0 0 20px rgba(255,34,0,0.2);
+  }
+
+  .ruin-btn:hover {
+    background: var(--red);
+    color: #000;
+    box-shadow: 0 0 40px var(--red);
+    text-shadow: none;
+    transform: scale(1.02);
+  }
+  .ruin-btn:active { transform: scale(0.98); }
+  .ruin-message {
+    margin-top: 14px;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--red);
+    min-height: 20px;
+    text-shadow: 0 0 6px var(--red);
+    animation: glitch 0.3s ease;
+  }
+  @keyframes glitch {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-3px); }
+    40% { transform: translateX(3px); }
+    60% { transform: translateX(-2px); }
+    80% { transform: translateX(2px); }
+    100% { transform: translateX(0); }
+  }
+
+  /* WAVEFORM */
+  .waveform-bar {
+    display: flex;
+    align-items: flex-end;
+    height: 40px;
+    gap: 2px;
+    padding: 0 10px;
+    overflow: hidden;
+  }
+  .wave-line {
+    width: 3px;
+    background: var(--green);
+    opacity: 0.6;
+    transition: height 0.1s;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+
+
+
+<!-- HEADER -->
+<div class="header">
+  <h1>UGLY SOUND MACHINE</h1>
+  <p class="subtitle">collect sounds, ruin sounds, make beautiful garbage</p>
+  <hr class="divider">
+  <div class="status-bar">
+    SYS_STAT: <span>[ONLINE]</span>
+    &nbsp;&nbsp;BUFFER: <span>847mb</span>
+    &nbsp;&nbsp;SOUNDS: <span id="total-sounds">0</span>
+    &nbsp;&nbsp;CORRUPTION: <span id="corruption-val">0%</span>
+    &nbsp;&nbsp;COLLAGE: <span id="collage-count">0 TRACKS</span>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="main-layout">
+  <!-- CATEGORIES -->
+  <div>
+    <div class="section-label">DATABASE // CATEGORIES</div>
+    <div class="categories-grid" id="categories-grid"></div>
+  </div>
+
+  <!-- SAMPLE LIST -->
+  <div>
+    <div class="sample-panel">
+      <div class="dir-label">
+        <span>DIR: <span id="current-dir">/SELECT_CATEGORY</span></span>
+        <span>.WAV FORMAT</span>
+      </div>
+      <div class="sample-list" id="sample-list">
+        <div style="color:var(--dim);font-size:11px;letter-spacing:2px;padding:20px 0;">
+          &gt; SELECT A CATEGORY TO LOAD SAMPLES_
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OPERATION DECK -->
+<div class="operation-deck">
+  <div class="deck-header">
+    <span class="deck-label">OPERATION DECK</span>
+    <div class="status-indicator">
+      <div class="status-dot stopped" id="status-dot"></div>
+      <span id="status-text">STOPPED</span>
+    </div>
+  </div>
+
+  <!-- WAVEFORM -->
+  <div class="waveform-bar" id="waveform"></div>
+
+  <!-- TRANSPORT -->
+  <div class="controls-row" style="margin-top:10px">
+    <button class="ctrl-btn play-btn" onclick="playSound()">▶ PLAY</button>
+    <button class="ctrl-btn stop-btn" onclick="stopSound()">■ STOP</button>
+    <button class="ctrl-btn" id="loop-btn" onclick="toggleFx('loop')">↺ LOOP</button>
+    <button class="ctrl-btn" id="rev-btn" onclick="toggleFx('reverse')">◄ REV</button>
+
+    <div class="speed-control">
+      <button class="speed-btn" onclick="changeSpeed(-0.1)">▼</button>
+      <span class="speed-val" id="speed-val">SPD: 1.0x</span>
+      <button class="speed-btn" onclick="changeSpeed(0.1)">▲</button>
+    </div>
+
+    <button class="ctrl-btn" onclick="addToCollage()">+ COLLAGE</button>
+  </div>
+
+  <!-- FX -->
+  <div class="fx-row">
+    <div class="fx-group">
+      <div class="fx-label">DISTORT</div>
+      <input type="range" class="fx-slider" id="fx-distort" min="0" max="100" value="0" oninput="updateFx()">
+    </div>
+    <div class="fx-group">
+      <div class="fx-label">ECHO / DELAY</div>
+      <input type="range" class="fx-slider" id="fx-echo" min="0" max="100" value="0" oninput="updateFx()">
+    </div>
+    <div class="fx-group">
+      <div class="fx-label">REVERB</div>
+      <input type="range" class="fx-slider" id="fx-reverb" min="0" max="100" value="0" oninput="updateFx()">
+    </div>
+    <div class="fx-group">
+      <div class="fx-label">PITCH SHIFT</div>
+      <input type="range" class="fx-slider" id="fx-pitch" min="-50" max="50" value="0" oninput="updateFx()">
+    </div>
+    <div class="fx-group">
+      <div class="fx-label">BITCRUSH</div>
+      <input type="range" class="fx-slider" id="fx-bitcrush" min="0" max="100" value="0" oninput="updateFx()">
+    </div>
+    <div class="fx-group">
+      <div class="fx-label">WOBBLE</div>
+      <input type="range" class="fx-slider" id="fx-wobble" min="0" max="100" value="0" oninput="updateFx()">
+    </div>
+    <div class="fx-group">
+      <div class="fx-label">STUTTER</div>
+      <input type="range" class="fx-slider" id="fx-stutter" min="0" max="100" value="0" oninput="updateFx()">
+    </div>
+    <div class="fx-group">
+      <div class="fx-label">FLANGER</div>
+      <input type="range" class="fx-slider" id="fx-flanger" min="0" max="100" value="0" oninput="updateFx()">
+    </div>
+    <div class="fx-group">
+      <div class="fx-label">TAPE STOP</div>
+      <input type="range" class="fx-slider" id="fx-tapestop" min="0" max="100" value="0" oninput="updateFx()">
+    </div>
+    <div class="fx-group">
+      <div class="fx-label">VINYL CRACKLE</div>
+      <input type="range" class="fx-slider" id="fx-vinyl" min="0" max="100" value="0" oninput="updateFx()">
+    </div>
+    <div class="fx-group">
+      <div class="fx-label">OVERDRIVE</div>
+      <input type="range" class="fx-slider" id="fx-overdrive" min="0" max="100" value="0" oninput="updateFx()">
+    </div>
+    <div class="fx-group">
+      <div class="fx-label">CHOP RATE</div>
+      <input type="range" class="fx-slider" id="fx-chop" min="0" max="100" value="0" oninput="updateFx()">
+    </div>
+  </div>
+
+  <!-- ACTIVE INFO -->
+  <div class="deck-info">
+    <div class="deck-info-row">
+      <span class="deck-info-key">ACTIVE:</span>
+      <span class="deck-info-val" id="info-active">NONE</span>
+    </div>
+    <div class="deck-info-row">
+      <span class="deck-info-key">CATEGORY:</span>
+      <span class="deck-info-val" id="info-cat">--</span>
+    </div>
+    <div class="deck-info-row">
+      <span class="deck-info-key">LOOP:</span>
+      <span class="deck-info-val" id="info-loop">OFF</span>
+      <span class="deck-info-key">REV:</span>
+      <span class="deck-info-val" id="info-rev">OFF</span>
+    </div>
+    <div class="deck-info-row">
+      <span class="deck-info-key">DIST:</span>
+      <span class="deck-info-val" id="info-dist">0</span>
+      <span class="deck-info-key">ECHO:</span>
+      <span class="deck-info-val" id="info-echo">0</span>
+    </div>
+  </div>
+</div>
+
+<!-- COLLAGE -->
+<div class="collage-section">
+  <div class="collage-header">
+    <span>// SOUND COLLAGE // LAYER MULTIPLE SOUNDS</span>
+    <span id="collage-status">0 / 8 SLOTS</span>
+  </div>
+  <div class="collage-slots" id="collage-slots">
+    <span class="collage-empty">[ EMPTY — ADD SOUNDS TO BUILD COLLAGE ]</span>
+  </div>
+  <div class="collage-controls">
+    <button class="collage-btn play-collage" onclick="playCollage()">▶ PLAY COLLAGE</button>
+    <button class="collage-btn" onclick="stopCollage()">■ STOP COLLAGE</button>
+    <button class="collage-btn" id="collage-loop-btn" onclick="toggleCollageLoop()">↺ LOOP OFF</button>
+    <button class="collage-btn" onclick="ruinCollage()">☠ RUIN COLLAGE</button>
+    <button class="collage-btn clear" onclick="clearCollage()">✕ CLEAR ALL</button>
+  </div>
+</div>
+
+<!-- RUIN IT -->
+<div class="ruin-section">
+  <button class="ruin-btn" onclick="ruinIt()">RUIN IT.</button>
+  <div class="ruin-message" id="ruin-message"></div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const CATEGORIES = [
+  {
+    name: 'TOYS', samples: [
+      'broken_doll_laugh.wav','music_box_decay.wav','jack_in_box_wrong.wav',
+      'windup_toy_death.wav','rubber_duck_drown.wav','toy_piano_wrong_note.wav',
+      'spinning_top_fall.wav','toy_xylophone_smash.wav'
+    ]
+  },
+  {
+    name: 'SCREAMS', samples: [
+      'tiny_scream_loop.wav','distant_echo_yell.wav','underwater_shriek.wav',
+      'slow_motion_wail.wav','reverse_gasp.wav','muffled_terror.wav',
+      'falsetto_break.wav','crowd_panic_fragment.wav'
+    ]
+  },
+  {
+    name: 'WHISPERS', samples: [
+      'backwards_number.wav','mouth_noise_series.wav','wet_consonant.wav',
+      'lip_smack_loop.wav','breath_stutter.wav','teeth_hiss.wav',
+      'paper_lips.wav','almost_word.wav'
+    ]
+  },
+  {
+    name: 'MOUTH SOUNDS', samples: [
+      'tongue_click_loop.wav','throat_clear_cut.wav','swallow_loop.wav',
+      'jaw_pop.wav','cheek_suck.wav','saliva_string.wav',
+      'hum_decay.wav','vocal_fry_drone.wav'
+    ]
+  },
+  {
+    name: 'BROKEN ELECTRONICS', samples: [
+      'wet_radio_static.wav','crt_death_buzz.wav','modem_handshake_corrupt.wav',
+      'fax_ghost_tone.wav','dial_up_soul.wav','tv_dying_channel.wav',
+      'hard_drive_last_breath.wav','circuit_pop_series.wav'
+    ]
+  },
+  {
+    name: 'TV STATIC', samples: [
+      'channel_zero.wav','analog_void.wav','signal_bleed.wav',
+      'noise_floor_walk.wav','late_night_hiss.wav','dead_frequency.wav'
+    ]
+  },
+  {
+    name: 'ANIMAL NOISES', samples: [
+      'dog_wrong_bark.wav','cat_low_warning.wav','cow_slowed.wav',
+      'frog_chorus_cut.wav','bird_loop_error.wav','pig_squeal_pitch.wav',
+      'horse_sneeze.wav','crow_reversed.wav','whale_chopped.wav'
+    ]
+  },
+  {
+    name: 'METAL', samples: [
+      'dumpster_drag.wav','pipe_resonance.wav','tin_can_spiral.wav',
+      'fence_scrape_loop.wav','fork_drop_reverb.wav','spring_twang.wav',
+      'bolt_drop_series.wav','metal_sheet_thunder.wav'
+    ]
+  },
+  {
+    name: 'PLASTIC', samples: [
+      'plastic_teeth_click.wav','container_creak.wav','lid_pop_series.wav',
+      'bag_crinkle_loop.wav','straw_squeak.wav','bottle_crush.wav',
+      'packaging_peel.wav','hollow_tap_rhythm.wav'
+    ]
+  },
+  {
+    name: 'FURNITURE', samples: [
+      'chair_drag_03.wav','door_squeak_loop.wav','drawer_slam_cut.wav',
+      'table_wobble.wav','sofa_spring_creak.wav','floorboard_step.wav',
+      'hinge_moan.wav','couch_sit_squelch.wav'
+    ]
+  },
+  {
+    name: 'BREATHING', samples: [
+      'sleep_breathing_loop.wav','heavy_exhale_cut.wav','nasal_inhale.wav',
+      'panic_breath_stutter.wav','deep_slow_exhale.wav','snore_fragment.wav',
+      'breath_through_teeth.wav','yawn_reversed.wav'
+    ]
+  },
+  {
+    name: 'WEIRD INSTRUMENTS', samples: [
+      'theremin_moan.wav','waterphone_swell.wav','musical_saw_cut.wav',
+      'wine_glass_drone.wav','jaw_harp_loop.wav','stylophone_wrong.wav',
+      'prepared_piano_key.wav','glass_harmonica.wav'
+    ]
+  },
+  {
+    name: 'USER RECORDINGS', samples: [
+      'unknown_recording_01.wav','field_tape_b.wav','voice_memo_corrupt.wav',
+      'room_tone_empty.wav','accidental_mic_on.wav','pocket_recording.wav'
+    ]
+  },
+  {
+    name: 'BODY SOUNDS', samples: [
+      'stomach_growl_loop.wav','knuckle_crack_series.wav','sniff_loop.wav',
+      'big_sneeze_cut.wav','belch_reversed.wav','wet_burp.wav',
+      'fart_pitched_up.wav','heartbeat_slowed.wav','finger_tap_hollow.wav'
+    ]
+  },
+  {
+    name: 'EVIL LAUGHS', samples: [
+      'cackle_loop.wav','witch_laugh_slow.wav','evil_giggle_echo.wav',
+      'maniacal_burst.wav','sinister_chuckle.wav','low_menace_laugh.wav',
+      'laugh_reversed.wav','hollow_haha.wav'
+    ]
+  },
+  {
+    name: 'HORROR', samples: [
+      'rusty_door_open.wav','chain_drag.wav','footstep_wet_loop.wav',
+      'something_breathing.wav','basement_hum.wav','clock_wrong.wav',
+      'creak_and_silence.wav','phone_ring_wrong.wav'
+    ]
+  },
+  {
+    name: 'KITCHEN', samples: [
+      'knife_sharpen_loop.wav','pressure_valve_hiss.wav','microwave_drone.wav',
+      'blender_scream.wav','fridge_motor.wav','pot_lid_crash.wav',
+      'fork_on_plate.wav','sizzle_loop.wav'
+    ]
+  },
+  {
+    name: 'WATER', samples: [
+      'drip_delay.wav','toilet_flush_cut.wav','bath_drain_loop.wav',
+      'rain_on_metal.wav','underwater_voice.wav','bubble_series.wav',
+      'puddle_step_loop.wav','pipe_knock.wav'
+    ]
+  },
+  {
+    name: 'SCI-FI', samples: [
+      'laser_charge.wav','warp_drone.wav','robot_malfunction.wav',
+      'alien_signal.wav','teleport_fail.wav','data_corruption.wav',
+      'engine_hum_deep.wav','scanner_sweep.wav'
+    ]
+  },
+  {
+    name: 'CONSTRUCTION', samples: [
+      'drill_short.wav','hammer_loop.wav','saw_idle.wav',
+      'impact_driver.wav','concrete_pour.wav','scaffolding_clank.wav',
+      'gravel_pour.wav','jackhammer_cut.wav'
+    ]
+  },
+  {
+    name: 'NATURE', samples: [
+      'thunder_close.wav','wind_through_wire.wav','tree_branch_crack.wav',
+      'insect_drone.wav','leaves_rustle_loop.wav','distant_storm.wav',
+      'mud_suction.wav','snow_step_crunch.wav'
+    ]
+  },
+  {
+    name: 'BABY SOUNDS', samples: [
+      'cry_pitched_down.wav','laugh_loop.wav','babble_reversed.wav',
+      'suck_loop.wav','whimper_cut.wav','giggle_slowed.wav'
+    ]
+  },
+  {
+    name: 'BEATS / RHYTHM', samples: [
+      'found_object_kick.wav','trash_can_snare.wav','plastic_hihat.wav',
+      'irregular_pulse.wav','body_percussion_loop.wav','off_grid_beat.wav',
+      'glitchy_drum_loop.wav','wrong_tempo_kick.wav'
+    ]
+  },
+  {
+    name: 'OFFICE', samples: [
+      'keyboard_fury.wav','printer_jam.wav','stapler_click.wav',
+      'copier_hum.wav','phone_hold_music.wav','office_chair_squeak.wav',
+      'tape_dispenser.wav','pen_click_loop.wav'
+    ]
+  }
+];
+
+const RUIN_MESSAGES = [
+  'THE MACHINE LIKES THIS.',
+  '+1 UGLINESS',
+  'THIS SOUND NO LONGER EXISTS.',
+  'YOUR EARS REGRET THIS.',
+  'ACCIDENT SAVED.',
+  'BEAUTIFUL GARBAGE ACHIEVED.',
+  'THE VOID APPROVES.',
+  'SOMETHING DIED IN HERE.',
+  'NOT MUSIC. BETTER.',
+  'CORRUPTION LEVEL: PERFECT.',
+  'SOUND HAS LEFT THE BUILDING.',
+  'THE FILE IS NOW A FEELING.',
+  'ENTROPY ENABLED.',
+  'MISTAKE DETECTED. KEEPING IT.',
+  'THIS WAS NOT THE PLAN.',
+  'AUDIO CRIME COMMITTED.',
+  'THE WAVEFORM IS CRYING.',
+  'FREQUENCY UNKNOWN.',
+  'SAVE THIS. NEVER EXPLAIN IT.',
+  'THE MACHINE IS PLEASED.',
+  'WHAT DID YOU DO.',
+  '+3 TO CHAOS STAT',
+  'UNRECOVERABLE. PERFECT.',
+  'LISTENING IS NO LONGER SAFE.',
+  'SYS_ERR: TOO_UGLY_TO_STOP'
+];
+
+// ==================== STATE ====================
+let currentCategory = null;
+let currentSample = null;
+let audioCtx = null;
+let currentSource = null;
+let isPlaying = false;
+let isLoop = false;
+let isReverse = false;
+let playbackSpeed = 1.0;
+let collage = [];
+let collageNodes = [];
+let collageLoopInterval = null;
+let isCollageLoop = false;
+
+let waveInterval = null;
+
+const fxState = {
+  distort: 0, echo: 0, reverb: 0, pitch: 0,
+  bitcrush: 0, wobble: 0, stutter: 0, flanger: 0,
+  tapestop: 0, vinyl: 0, overdrive: 0, chop: 0
+};
+
+function toggleCollageLoop() {
+  isCollageLoop = !isCollageLoop;
+  const btn = document.getElementById('collage-loop-btn');
+  btn.textContent = isCollageLoop ? '↺ LOOP ON' : '↺ LOOP OFF';
+  btn.classList.toggle('active', isCollageLoop);
+}
+
+// ==================== AUDIO ENGINE ====================
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function generateSound(category, sampleName) {
+  const ctx = getAudioCtx();
+  const duration = 3.5 + Math.random() * 3;
+  const sampleRate = ctx.sampleRate;
+  const frameCount = Math.floor(sampleRate * duration);
+  const buffer = ctx.createBuffer(1, frameCount, sampleRate);
+  const data = buffer.getChannelData(0);
+  const catName = category ? category.name : 'UNKNOWN';
+
+  const seed = sampleName ? sampleName.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 42;
+  const rng = (n) => Math.sin(seed * n * 127.1 + n * 311.7) * 0.5 + 0.5;
+
+  // Generate sound based on category
+  if (catName === 'BROKEN ELECTRONICS' || catName === 'TV STATIC') {
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const noise = (Math.random() * 2 - 1) * 0.3;
+      const buzz = Math.sin(t * 60 * Math.PI * 2) * 0.15;
+      const crackle = Math.random() < 0.002 ? (Math.random() * 2 - 1) * 0.8 : 0;
+      const modFreq = 50 + rng(3) * 200;
+      const mod = Math.sin(t * modFreq * Math.PI * 2) * 0.1;
+      data[i] = (noise + buzz + crackle + mod) * (1 - t / duration * 0.3);
+    }
+  } else if (catName === 'SCREAMS' || catName === 'EVIL LAUGHS') {
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const baseFreq = 200 + rng(1) * 400;
+      const envelope = Math.sin(t / duration * Math.PI) * Math.pow(Math.E, -t * 0.5);
+      const vibrato = Math.sin(t * 7 * Math.PI * 2) * 0.1;
+      const noise = (Math.random() * 2 - 1) * 0.1;
+      const harm1 = Math.sin(t * baseFreq * Math.PI * 2);
+      const harm2 = Math.sin(t * baseFreq * 1.5 * Math.PI * 2) * 0.4;
+      const harm3 = Math.sin(t * baseFreq * 2 * Math.PI * 2) * 0.2;
+      data[i] = (harm1 + harm2 + harm3 + noise) * (0.5 + vibrato) * envelope * 0.6;
+    }
+  } else if (catName === 'METAL') {
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const freq1 = 80 + rng(1) * 300;
+      const freq2 = freq1 * (1.4 + rng(2) * 0.8);
+      const decay = Math.exp(-t * (1 + rng(3) * 3));
+      const ring1 = Math.sin(t * freq1 * Math.PI * 2);
+      const ring2 = Math.sin(t * freq2 * Math.PI * 2);
+      const noise = (Math.random() * 2 - 1) * 0.05;
+      data[i] = (ring1 * 0.5 + ring2 * 0.4 + noise) * decay * 0.7;
+    }
+  } else if (catName === 'WATER') {
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const bubble = Math.sin(t * (400 + rng(i * 0.001) * 600) * Math.PI * 2) * Math.exp(-t * 8) * (Math.random() < 0.03 ? 0.6 : 0);
+      const drip = Math.sin(t * (600 + rng(2) * 400) * Math.PI * 2) * Math.exp(-((t % 1.2) * 10));
+      const flow = (Math.random() * 2 - 1) * 0.08;
+      data[i] = (bubble + drip * 0.5 + flow) * 0.6;
+    }
+  } else if (catName === 'NATURE') {
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const wind = (Math.random() * 2 - 1) * 0.2;
+      const lowRumble = Math.sin(t * (20 + rng(1) * 40) * Math.PI * 2) * 0.15;
+      const rustle = (Math.random() * 2 - 1) * 0.1 * Math.abs(Math.sin(t * 3));
+      const thunder = rng(3) > 0.97 ? Math.sin(t * 60 * Math.PI * 2) * Math.exp(-t * 2) * 0.5 : 0;
+      data[i] = (wind + lowRumble + rustle + thunder) * 0.7;
+    }
+  } else if (catName === 'BODY SOUNDS' || catName === 'MOUTH SOUNDS') {
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const pop = Math.random() < 0.005 ? Math.exp(-((t % 0.8) * 30)) * (Math.random() * 2 - 1) * 0.9 : 0;
+      const breath = (Math.random() * 2 - 1) * 0.15 * (0.5 + Math.sin(t * 0.5 * Math.PI * 2) * 0.5);
+      const low = Math.sin(t * (80 + rng(1) * 120) * Math.PI * 2) * 0.1 * Math.exp(-t * 0.3);
+      data[i] = (pop + breath + low) * 0.7;
+    }
+  } else if (catName === 'SCI-FI') {
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const sweep = Math.sin(t * (200 + t * 300 * rng(1)) * Math.PI * 2) * 0.4;
+      const noise = (Math.random() * 2 - 1) * 0.1;
+      const pulse = Math.floor(Math.sin(t * (4 + rng(2) * 8) * Math.PI * 2) + 1) * 0.2;
+      const drone = Math.sin(t * (50 + rng(3) * 100) * Math.PI * 2) * 0.2;
+      data[i] = (sweep + noise + pulse + drone) * Math.min(1, t * 3) * 0.6;
+    }
+  } else if (catName === 'HORROR') {
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const creak = Math.sin(t * (40 + Math.sin(t * 0.3) * 20) * Math.PI * 2) * 0.3;
+      const groan = Math.sin(t * (80 + Math.sin(t * 0.5) * 30) * Math.PI * 2) * 0.2;
+      const noise = (Math.random() * 2 - 1) * 0.05;
+      const heartbeat = t % 1 < 0.08 ? Math.sin(t * 200 * Math.PI * 2) * Math.exp(-(t % 1) * 40) * 0.6 : 0;
+      data[i] = (creak + groan + noise + heartbeat) * 0.7;
+    }
+  } else if (catName === 'BEATS / RHYTHM') {
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const bpm = 80 + rng(1) * 80;
+      const beat = t * bpm / 60;
+      const kick = beat % 1 < 0.05 ? Math.exp(-(beat % 1) * 40) * Math.sin(t * 60 * Math.PI * 2) * 0.8 : 0;
+      const snare = beat % 2 > 0.9 ? (Math.random() * 2 - 1) * Math.exp(-(beat % 1) * 20) * 0.5 : 0;
+      const hihat = beat % 0.5 < 0.04 ? (Math.random() * 2 - 1) * 0.2 : 0;
+      data[i] = (kick + snare + hihat) * 0.7;
+    }
+  } else if (catName === 'WEIRD INSTRUMENTS') {
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const baseFreq = 200 + rng(1) * 400;
+      const vib = Math.sin(t * 5 * Math.PI * 2) * 20;
+      const tone = Math.sin(t * (baseFreq + vib) * Math.PI * 2) * 0.4;
+      const harm = Math.sin(t * (baseFreq * 2 + vib) * Math.PI * 2) * 0.2;
+      const bow = (Math.random() * 2 - 1) * 0.05;
+      const env = Math.min(1, t * 2) * Math.max(0, 1 - (t - duration + 1));
+      data[i] = (tone + harm + bow) * env * 0.7;
+    }
+  } else if (catName === 'KITCHEN' || catName === 'CONSTRUCTION' || catName === 'OFFICE') {
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const mechFreq = 100 + rng(1) * 200;
+      const mech = Math.sin(t * mechFreq * Math.PI * 2) * 0.3;
+      const impact = Math.random() < 0.01 ? (Math.random() * 2 - 1) * 0.7 * Math.exp(-(t % 0.5) * 20) : 0;
+      const hum = Math.sin(t * 60 * Math.PI * 2) * 0.1 + Math.sin(t * 120 * Math.PI * 2) * 0.05;
+      data[i] = (mech + impact + hum) * 0.6;
+    }
+  } else {
+    // Default: interesting noise for all other categories
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const baseFreq = 100 + rng(1) * 300;
+      const tone = Math.sin(t * baseFreq * Math.PI * 2) * 0.3;
+      const mod = Math.sin(t * (baseFreq * 0.5) * Math.PI * 2) * 0.2;
+      const noise = (Math.random() * 2 - 1) * 0.2;
+      const env = Math.sin(t / duration * Math.PI);
+      data[i] = (tone + mod + noise) * env * 0.6;
+    }
+  }
+
+  // Apply FX
+  applyFxToBuffer(data, sampleRate, duration);
+
+  return buffer;
+}
+
+function applyFxToBuffer(data, sampleRate, duration) {
+  const frameCount = data.length;
+  const dist = fxState.distort / 100;
+  const bc = fxState.bitcrush / 100;
+  const od = fxState.overdrive / 100;
+  const ts = fxState.tapestop / 100;
+
+  for (let i = 0; i < frameCount; i++) {
+    let s = data[i];
+
+    // Distortion
+    if (dist > 0) s = Math.tanh(s * (1 + dist * 8));
+
+    // Overdrive
+    if (od > 0) s = s * (1 + od * 4) > 1 ? 1 : s * (1 + od * 4) < -1 ? -1 : s * (1 + od * 4);
+
+    // Bitcrush
+    if (bc > 0) {
+      const steps = Math.pow(2, Math.floor(bc * 6) + 2);
+      s = Math.round(s * steps) / steps;
+    }
+
+    // Tape stop
+    if (ts > 0) {
+      const slowFactor = 1 - (i / frameCount) * ts;
+      if (slowFactor <= 0.05) s = 0;
+      else s *= slowFactor;
+    }
+
+    // Reverse
+    if (isReverse) {
+      // Will be applied by reversing playback
+    }
+
+    data[i] = s * 0.8;
+  }
+
+  // Wobble (pitch modulation)
+  if (fxState.wobble > 0) {
+    const wobbleDepth = fxState.wobble / 100 * 0.05;
+    const wobbly = new Float32Array(frameCount);
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      const offset = Math.sin(t * 4 * Math.PI * 2) * wobbleDepth * sampleRate;
+      const srcIdx = Math.floor(i + offset);
+      wobbly[i] = srcIdx >= 0 && srcIdx < frameCount ? data[srcIdx] : data[i];
+    }
+    for (let i = 0; i < frameCount; i++) data[i] = wobbly[i];
+  }
+
+  // Stutter
+  if (fxState.stutter > 0) {
+    const chopSize = Math.floor(sampleRate * 0.05 * (1 - fxState.stutter / 100 * 0.8));
+    for (let i = 0; i < frameCount; i++) {
+      if (Math.floor(i / chopSize) % 2 === 1 && Math.random() < fxState.stutter / 100 * 0.5) {
+        data[i] = 0;
+      }
+    }
+  }
+
+  // Chop
+  if (fxState.chop > 0) {
+    const chopFreq = fxState.chop / 100 * 20 + 2;
+    for (let i = 0; i < frameCount; i++) {
+      const t = i / sampleRate;
+      if (Math.sin(t * chopFreq * Math.PI * 2) < 0) data[i] *= 0.1;
+    }
+  }
+
+  // Vinyl crackle
+  if (fxState.vinyl > 0) {
+    for (let i = 0; i < frameCount; i++) {
+      if (Math.random() < fxState.vinyl / 100 * 0.02) {
+        data[i] += (Math.random() * 2 - 1) * 0.3;
+      }
+    }
+  }
+}
+
+function playBuffer(buffer, loop) {
+  const ctx = getAudioCtx();
+  if (currentSource) { try { currentSource.stop(); } catch(e){} }
+
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.playbackRate.value = playbackSpeed;
+  source.loop = loop;
+
+  // Build FX chain
+  let lastNode = source;
+  const chain = [];
+
+  // Echo/Delay
+  if (fxState.echo > 0) {
+    const delay = ctx.createDelay(1.0);
+    delay.delayTime.value = 0.2 + fxState.echo / 100 * 0.5;
+    const feedbackGain = ctx.createGain();
+    feedbackGain.gain.value = fxState.echo / 100 * 0.7;
+    const dryGain = ctx.createGain();
+    dryGain.gain.value = 0.6;
+    lastNode.connect(dryGain);
+    lastNode.connect(delay);
+    delay.connect(feedbackGain);
+    feedbackGain.connect(delay);
+    const merger = ctx.createGain();
+    dryGain.connect(merger);
+    delay.connect(merger);
+    lastNode = merger;
+  }
+
+  // Reverb (convolution approximation)
+  if (fxState.reverb > 0) {
+    const convLen = Math.floor(ctx.sampleRate * (0.5 + fxState.reverb / 100 * 3));
+    const impulse = ctx.createBuffer(2, convLen, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = impulse.getChannelData(ch);
+      for (let i = 0; i < convLen; i++) {
+        d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / convLen, 2);
+      }
+    }
+    const conv = ctx.createConvolver();
+    conv.buffer = impulse;
+    const wetGain = ctx.createGain();
+    wetGain.gain.value = fxState.reverb / 100 * 0.6;
+    const dryGain = ctx.createGain();
+    dryGain.gain.value = 0.7;
+    lastNode.connect(dryGain);
+    lastNode.connect(conv);
+    conv.connect(wetGain);
+    const merger = ctx.createGain();
+    dryGain.connect(merger);
+    wetGain.connect(merger);
+    lastNode = merger;
+  }
+
+  // Pitch shift (playback rate trick)
+  if (fxState.pitch !== 0) {
+    source.playbackRate.value = playbackSpeed * Math.pow(2, fxState.pitch / 100);
+  }
+
+  // Flanger
+  if (fxState.flanger > 0) {
+    const flanDelay = ctx.createDelay(0.1);
+    flanDelay.delayTime.value = 0.005;
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    lfo.frequency.value = fxState.flanger / 100 * 5;
+    lfoGain.gain.value = 0.003;
+    lfo.connect(lfoGain);
+    lfoGain.connect(flanDelay.delayTime);
+    lfo.start();
+    const flanGain = ctx.createGain();
+    flanGain.gain.value = 0.6;
+    lastNode.connect(flanDelay);
+    flanDelay.connect(flanGain);
+    const merger = ctx.createGain();
+    lastNode.connect(merger);
+    flanGain.connect(merger);
+    lastNode = merger;
+    chain.push({ stop: () => { try { lfo.stop(); } catch(e){} } });
+  }
+
+  // Master gain
+  const masterGain = ctx.createGain();
+  masterGain.gain.value = 0.85;
+  lastNode.connect(masterGain);
+  masterGain.connect(ctx.destination);
+
+  source.start();
+  currentSource = source;
+  source._chain = chain;
+
+  source.onended = () => {
+    chain.forEach(n => { if (n.stop) n.stop(); });
+    if (!loop) {
+      setStatus('STOPPED');
+      stopWaveform();
+    }
+  };
+
+  setStatus('PLAYING');
+  startWaveform();
+  return source;
+}
+
+function playSound() {
+  if (!currentCategory || !currentSample) {
+    alert('SELECT A CATEGORY AND SAMPLE FIRST');
+    return;
+  }
+  getAudioCtx();
+  const buffer = generateSound(currentCategory, currentSample);
+  playBuffer(buffer, isLoop);
+}
+
+function stopSound() {
+  if (currentSource) { try { currentSource.stop(); } catch(e){} currentSource = null; }
+  setStatus('STOPPED');
+  stopWaveform();
+}
+
+function toggleFx(fx) {
+  if (fx === 'loop') {
+    isLoop = !isLoop;
+    document.getElementById('loop-btn').classList.toggle('active', isLoop);
+    document.getElementById('info-loop').textContent = isLoop ? 'ON' : 'OFF';
+  } else if (fx === 'reverse') {
+    isReverse = !isReverse;
+    document.getElementById('rev-btn').classList.toggle('active', isReverse);
+    document.getElementById('info-rev').textContent = isReverse ? 'ON' : 'OFF';
+  }
+}
+
+function changeSpeed(delta) {
+  playbackSpeed = Math.max(0.1, Math.min(4.0, playbackSpeed + delta));
+  playbackSpeed = Math.round(playbackSpeed * 10) / 10;
+  document.getElementById('speed-val').textContent = 'SPD: ' + playbackSpeed.toFixed(1) + 'x';
+  if (currentSource) currentSource.playbackRate.value = playbackSpeed;
+}
+
+function updateFx() {
+  fxState.distort = +document.getElementById('fx-distort').value;
+  fxState.echo = +document.getElementById('fx-echo').value;
+  fxState.reverb = +document.getElementById('fx-reverb').value;
+  fxState.pitch = +document.getElementById('fx-pitch').value;
+  fxState.bitcrush = +document.getElementById('fx-bitcrush').value;
+  fxState.wobble = +document.getElementById('fx-wobble').value;
+  fxState.stutter = +document.getElementById('fx-stutter').value;
+  fxState.flanger = +document.getElementById('fx-flanger').value;
+  fxState.tapestop = +document.getElementById('fx-tapestop').value;
+  fxState.vinyl = +document.getElementById('fx-vinyl').value;
+  fxState.overdrive = +document.getElementById('fx-overdrive').value;
+  fxState.chop = +document.getElementById('fx-chop').value;
+  document.getElementById('info-dist').textContent = fxState.distort;
+  document.getElementById('info-echo').textContent = fxState.echo;
+}
+
+// ==================== COLLAGE ====================
+function addToCollage() {
+  if (!currentSample) { alert('SELECT A SAMPLE FIRST'); return; }
+  if (collage.length >= 8) { alert('COLLAGE FULL (MAX 8)'); return; }
+  const entry = { sample: currentSample, category: currentCategory, fx: { ...fxState }, speed: playbackSpeed };
+  collage.push(entry);
+  renderCollage();
+}
+
+function renderCollage() {
+  const slots = document.getElementById('collage-slots');
+  document.getElementById('collage-status').textContent = collage.length + ' / 8 SLOTS';
+  document.getElementById('collage-count').textContent = collage.length + ' TRACKS';
+  if (collage.length === 0) {
+    slots.innerHTML = '<span class="collage-empty">[ EMPTY — ADD SOUNDS TO BUILD COLLAGE ]</span>';
+    return;
+  }
+  slots.innerHTML = collage.map((e, i) => `
+    <div class="collage-slot" onclick="removeFromCollage(${i})">
+      <span>${(i+1).toString().padStart(2,'0')} ${e.sample}</span>
+      <span class="slot-x">✕</span>
+    </div>
+  `).join('');
+}
+
+function removeFromCollage(idx) {
+  collage.splice(idx, 1);
+  renderCollage();
+}
+
+function clearCollage() {
+  stopCollage();
+  collage = [];
+  renderCollage();
+}
+
+function playCollage() {
+  if (collage.length === 0) { alert('COLLAGE IS EMPTY'); return; }
+  stopCollage();
+  _doPlayCollage();
+  if (isCollageLoop) {
+    collageLoopInterval = setInterval(() => {
+      stopCollageNodes();
+      _doPlayCollage();
+    }, 7500);
+  }
+  setStatus('COLLAGE PLAYING');
+}
+
+function _doPlayCollage() {
+  const ctx = getAudioCtx();
+  collage.forEach((entry, i) => {
+    const savedFx = { ...fxState };
+    Object.assign(fxState, entry.fx);
+    const buffer = generateSound(entry.category, entry.sample);
+    Object.assign(fxState, savedFx);
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.playbackRate.value = entry.speed || 1.0;
+    const gain = ctx.createGain();
+    gain.gain.value = 0.6;
+    source.connect(gain);
+    gain.connect(ctx.destination);
+    source.start(ctx.currentTime + i * 0.05);
+    collageNodes.push(source);
+  });
+}
+
+function stopCollageNodes() {
+  collageNodes.forEach(n => { try { n.stop(); } catch(e){} });
+  collageNodes = [];
+}
+
+function stopCollage() {
+  clearInterval(collageLoopInterval);
+  collageLoopInterval = null;
+  stopCollageNodes();
+}
+
+function ruinCollage() {
+  if (collage.length === 0) { alert('COLLAGE IS EMPTY'); return; }
+  stopCollage();
+  const ctx = getAudioCtx();
+  const shuffled = [...collage].sort(() => Math.random() - 0.5);
+  shuffled.forEach((entry, i) => {
+    const buffer = generateSound(entry.category, entry.sample);
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.playbackRate.value = 0.5 + Math.random() * 2;
+    const gain = ctx.createGain();
+    gain.gain.value = 0.5;
+    source.connect(gain);
+    gain.connect(ctx.destination);
+    source.start(ctx.currentTime + i * (Math.random() * 0.3));
+    collageNodes.push(source);
+  });
+  showRuinMsg();
+  document.getElementById('corruption-val').textContent = Math.floor(Math.random() * 80 + 20) + '%';
+}
+
+// ==================== RUIN IT ====================
+function ruinIt() {
+  if (CATEGORIES.length === 0) return;
+  const randCat = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+  const randSample = randCat.samples[Math.floor(Math.random() * randCat.samples.length)];
+
+  // Randomize all fx
+  Object.keys(fxState).forEach(k => {
+    if (k === 'pitch') fxState[k] = Math.floor(Math.random() * 100 - 50);
+    else fxState[k] = Math.floor(Math.random() * 100);
+  });
+  document.getElementById('fx-distort').value = fxState.distort;
+  document.getElementById('fx-echo').value = fxState.echo;
+  document.getElementById('fx-reverb').value = fxState.reverb;
+  document.getElementById('fx-pitch').value = fxState.pitch;
+  document.getElementById('fx-bitcrush').value = fxState.bitcrush;
+  document.getElementById('fx-wobble').value = fxState.wobble;
+  document.getElementById('fx-stutter').value = fxState.stutter;
+  document.getElementById('fx-flanger').value = fxState.flanger;
+  document.getElementById('fx-tapestop').value = fxState.tapestop;
+  document.getElementById('fx-vinyl').value = fxState.vinyl;
+  document.getElementById('fx-overdrive').value = fxState.overdrive;
+  document.getElementById('fx-chop').value = fxState.chop;
+  document.getElementById('info-dist').textContent = fxState.distort;
+  document.getElementById('info-echo').textContent = fxState.echo;
+
+  playbackSpeed = Math.round((0.3 + Math.random() * 2.5) * 10) / 10;
+  document.getElementById('speed-val').textContent = 'SPD: ' + playbackSpeed.toFixed(1) + 'x';
+
+  currentCategory = randCat;
+  currentSample = randSample;
+  document.getElementById('info-active').textContent = randSample;
+  document.getElementById('info-cat').textContent = randCat.name;
+
+  const buffer = generateSound(randCat, randSample);
+  playBuffer(buffer, false);
+  showRuinMsg();
+  document.getElementById('corruption-val').textContent = Math.floor(Math.random() * 100) + '%';
+}
+
+function showRuinMsg() {
+  const msg = RUIN_MESSAGES[Math.floor(Math.random() * RUIN_MESSAGES.length)];
+  const el = document.getElementById('ruin-message');
+  el.textContent = msg;
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = 'glitch 0.3s ease';
+}
+
+// ==================== UI ====================
+function renderCategories() {
+  const grid = document.getElementById('categories-grid');
+  let total = 0;
+  grid.innerHTML = CATEGORIES.map((cat, i) => {
+    total += cat.samples.length;
+    return `<div class="cat-card" onclick="selectCategory(${i})" id="cat-${i}">
+      <div class="cat-name">${cat.name}</div>
+      <div class="cat-count">[${cat.samples.length} SAMPLES]</div>
+    </div>`;
+  }).join('');
+  document.getElementById('total-sounds').textContent = total.toLocaleString();
+}
+
+function selectCategory(idx) {
+  document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('cat-' + idx).classList.add('active');
+  currentCategory = CATEGORIES[idx];
+  document.getElementById('current-dir').textContent = '/' + currentCategory.name.replace(/ /g, '_');
+  renderSamples(currentCategory);
+}
+
+function renderSamples(cat) {
+  const list = document.getElementById('sample-list');
+  list.innerHTML = cat.samples.map((s, i) => `
+    <div class="sample-item" onclick="selectSample('${s}', this)" id="sample-${i}">
+      <span>
+        <span class="sample-num">${String(i+1).padStart(2,'0')}</span>
+        ${s}
+      </span>
+      <span class="sample-size">[ ${(1.2 + Math.random() * 2.8).toFixed(1)}MB ]</span>
+    </div>
+  `).join('');
+}
+
+function selectSample(name, el) {
+  document.querySelectorAll('.sample-item').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  currentSample = name;
+  document.getElementById('info-active').textContent = name;
+  document.getElementById('info-cat').textContent = currentCategory ? currentCategory.name : '--';
+}
+
+function setStatus(text) {
+  isPlaying = text === 'PLAYING' || text === 'COLLAGE PLAYING';
+  document.getElementById('status-text').textContent = text;
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot';
+  if (isPlaying) dot.classList.add('playing');
+  else dot.classList.add('stopped');
+}
+
+function startWaveform() {
+  const wv = document.getElementById('waveform');
+  if (!wv.children.length) {
+    for (let i = 0; i < 48; i++) {
+      const line = document.createElement('div');
+      line.className = 'wave-line';
+      line.style.height = '4px';
+      wv.appendChild(line);
+    }
+  }
+  waveInterval = setInterval(() => {
+    const lines = wv.querySelectorAll('.wave-line');
+    lines.forEach(l => {
+      l.style.height = (2 + Math.random() * 36) + 'px';
+    });
+  }, 80);
+}
+
+function stopWaveform() {
+  clearInterval(waveInterval);
+  const lines = document.querySelectorAll('.wave-line');
+  lines.forEach(l => l.style.height = '2px');
+}
+
+
+// ==================== INIT ====================
+renderCategories();
+renderCollage();
+</script>
+</body>
+</html>
