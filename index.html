@@ -413,7 +413,15 @@
 </head>
 <body>
 
-
+<!-- MOBILE AUDIO UNLOCK OVERLAY -->
+<div id="audio-unlock-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
+  <div style="border:2px solid #00ff41; padding:30px 20px; max-width:300px;">
+    <div style="font-size:32px; margin-bottom:16px;">☠</div>
+    <div style="color:#00ff41; font-family:'Courier New',monospace; font-size:16px; letter-spacing:3px; margin-bottom:8px;">UGLY SOUND MACHINE</div>
+    <div style="color:#006614; font-family:'Courier New',monospace; font-size:11px; letter-spacing:2px; margin-bottom:24px;">tap to initialize audio system</div>
+    <button onclick="unlockAudio()" style="background:#00ff41; color:#000; border:none; font-family:'Courier New',monospace; font-size:14px; font-weight:900; letter-spacing:3px; padding:14px 30px; cursor:pointer; width:100%;">▶ INITIALIZE</button>
+  </div>
+</div>
 
 <!-- HEADER -->
 <div class="header">
@@ -1418,9 +1426,40 @@ function stopWaveform() {
 }
 
 
+// ==================== MOBILE AUDIO UNLOCK ====================
+function unlockAudio() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const buf = ctx.createBuffer(1, 1, 22050);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctx.destination);
+  src.start(0);
+  ctx.resume().then(() => {
+    audioCtx = ctx;
+    document.getElementById('audio-unlock-overlay').style.display = 'none';
+  });
+}
+
+function checkMobile() {
+  const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+  if (isMobile) {
+    document.getElementById('audio-unlock-overlay').style.display = 'flex';
+  }
+}
+
 // ==================== INIT ====================
 renderCategories();
 renderCollage();
+checkMobile();
+
+// Also unlock audio on first interaction for all devices
+document.addEventListener('touchstart', function unlockOnTouch() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  document.removeEventListener('touchstart', unlockOnTouch);
+}, { once: true });
 </script>
 </body>
 </html>
